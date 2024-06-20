@@ -95,6 +95,8 @@ class Function(BaseModel):
         }
         return function_info
 
+class FunctionStopped(Exception):
+    pass
 
 class FunctionCall(BaseModel):
     """Model for Function Calls"""
@@ -140,6 +142,8 @@ class FunctionCall(BaseModel):
             try:
                 self.result = self.function.entrypoint()
                 return True
+            except FunctionStopped as e:
+                raise FunctionStopped(e)
             except Exception as e:
                 logger.warning(f"Could not run function {self.get_call_str()}")
                 logger.exception(e)
@@ -149,6 +153,8 @@ class FunctionCall(BaseModel):
         try:
             self.result = self.function.entrypoint(**self.arguments)
             return True
+        except FunctionStopped as e:
+            raise FunctionStopped(e)
         except Exception as e:
             logger.warning(f"Could not run function {self.get_call_str()}")
             logger.exception(e)
